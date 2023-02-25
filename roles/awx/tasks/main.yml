@@ -1,0 +1,68 @@
+---
+- name: Create awx User
+  user:
+    name: awx
+    shell: /usr/sbin/nologin
+
+- name: Create .awx and .awx/redis_socket at the same time
+  file:
+    path: '{{item}}'
+    state: directory
+    recurse: yes
+    mode: '0750'
+    owner: awx
+    group: awx
+  with_items:
+    - /data/.awx/redis_socket
+
+- name: Include OS-specific variables.
+  include_vars: "{{ ansible_os_family }}.yml"
+  
+- name: Get awx user uid for awx_redis file permission
+  shell: id -u awx
+  register: awx_uid
+
+- name: Get Docker Gateway
+  shell: ip route show | grep docker0 | awk '{print $9}'
+  register: awx_docker_gateway
+
+- name: Copy docker env and configuration files
+  template:
+    src: "{{item}}"
+    dest: '/data/.awx'
+  loop:
+    - credentials.py
+    - docker-compose.yml
+    - environment.sh
+    - nginx.conf
+    - redis.conf
+    - SECRET_KEY
+    
+- name: Create awx soft link to /data/wwwroot/awx
+  file:
+    src: /data/.awx
+    dest: /data/wwwroot/awx
+    state: link
+    
+- name: Run docker-compose
+  shell: |
+    docker-compose up -d 
+    sleep 30s
+  args:
+    chdir: /data/.awx
+
+# check awx container status and  awx version
+- block:
+  - name: Get awx container restarting number
+    shell: docker ps -a --filter 'status=restarting' |wc -l
+    register: awx_status
+
+  - name: Check whether awx container status 
+    fail:
+      msg: "awx fail to start!"
+    when: awx_status.stdout > "1"
+
+  - name: Get awx version
+    shell: >
+      sudo echo -e "awx version:" $(docker exec -it awx_web bash -c "awx-manage --version") |sudo tee -a /data/logs/install_version.txt  
+   

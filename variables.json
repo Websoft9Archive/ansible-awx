@@ -1,0 +1,18 @@
+{
+  "name": "awx",
+  "trademark": "AWX",
+  "official_url": "https://github.com/ansible/awx",
+  "support_os": "CentOS7.x, Ubuntu20.04, Amazon Linux2",
+  "requirements_cpu": "2",
+  "requirements_memory": "4",
+  "requirements_Bandwidth": "100",
+  "requirements_disk": "20",
+  "requirements_swap": "2",
+  "requirements_configure_url": "https://github.com/ansible/awx/tree/devel/requirements",
+  "components": "Nginx, PostgreSQL, Docker, AWX on docker, pgadmin on docker",
+  "install_way": {
+    "en": "Docker install",
+    "zh": "Docker 安装"
+  },
+  "install_url": "https://hub.docker.com/r/ansible/awx/tags?page=1&ordering=last_updated"
+}

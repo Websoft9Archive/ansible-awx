@@ -1,0 +1,23 @@
+- name: awx
+  hosts: all
+  become: yes
+  become_method: sudo
+  gather_facts: True
+  vars_files:
+    - vars/main.yml
+
+  vars:
+    awx_postgres_password: "{{postgresql_password}}"
+
+  roles:
+    - {role: role_common, tags: "role_common"}
+    - {role: role_cloud, tags: "role_cloud"}
+    - {role: role_postgresql, tags: "role_postgresql"}
+    - {role: role_docker, tags: "role_docker"}
+    - {role: role_nginx, tags: "role_nginx"}
+    - {role: awx, tags: "awx"}
+    - {role: role_init, tags: "role_init"}
+    - {role: role_preend, tags: "role_preend"}
+    - {role: role_end, tags: "role_end"}
+  
+

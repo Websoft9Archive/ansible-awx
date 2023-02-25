@@ -1,0 +1,12 @@
+---
+#docker-compose模块只能运行在python3上，因此必须强转为python3
+#注意：通过修改ansible配置文件或在inventory中修改，是没有作用的，原因是ansible-playbook这条命令本身是由ansible模块发起的
+#ansible-playbook必须指定路径才兼容centos
+- name: Install docker compose python
+  shell: sudo python3 -m pip install -U --force-reinstall docker-compose
+
+- name: Run the AWX installation playbook.
+  shell: "/usr/bin/ansible-playbook -i inventory install.yml -e ansible_python_interpreter=/usr/bin/python3 -e postgres_data_dir={{ postgres_data_dir }} -e docker_compose_dir={{ docker_compose_dir }}"
+  args:
+    chdir: "{{ awx_repo_dir }}/installer"
+    creates: /etc/awx_playbook_complete

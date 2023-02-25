@@ -1,0 +1,48 @@
+region: "0"
+common_os_support: ["CentOS", "Ubuntu", "Amazon"]
+
+nginx_appname: "awx"
+nginx_vhost_mode: "reverse"
+nginx_reverse_proxy_port: "8052"
+nginx_certbot: True
+
+postgresql_version: "10"
+postgresql_password: "123456"
+
+postgresql_databases:
+  - name: awx
+
+postgresql_users:
+  - name: awx
+    db: awx
+    password: 123456
+
+postgresql_remote: True
+
+docker_applications: 
+  - pgadmin
+
+init_db: 
+  postgresql:
+    admin: postgres
+    users: ["awx"]
+    password: "123456"
+      
+init_docker:
+  awx:
+    admin_username: admin
+    admin_password: "password"
+    compose_path: "/data/.awx/docker-compose.yml"
+    compose_commands: 
+      - sudo sed -i "s/123456/$new_password/g" /data/.awx/credentials.py
+      - sudo sed -i "s/DATABASE_PASSWORD=123456/DATABASE_PASSWORD=$new_password/g" /data/.awx/environment.sh
+      - sudo sed -i "s/AWX_ADMIN_PASSWORD=password/AWX_ADMIN_PASSWORD=$new_password/g" /data/.awx/environment.sh
+      - sudo -u postgres psql -c 'drop database awx'
+      - sudo -u postgres psql -c 'create database awx'
+  pgadmin:
+    admin_username: user@domain.com
+    admin_password: "SuperSecret"
+    service_after: "docker.service"
+    compose_path: "/data/apps/pgadmin/docker-compose.yml"
+    compose_commands:
+      - sudo sed -i "s/SuperSecret/$new_password/g" /data/apps/pgadmin/docker-compose.yml
